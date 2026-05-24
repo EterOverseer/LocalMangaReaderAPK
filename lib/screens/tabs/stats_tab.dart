@@ -9,6 +9,7 @@ class StatsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lp = context.watch<LibraryProvider>();
+    final theme = Theme.of(context);
     final totalSeries = lp.series.length;
     final totalChapters = lp.series.fold(0, (sum, s) => sum + s.chapters.length);
     
@@ -20,7 +21,7 @@ class StatsTab extends StatelessWidget {
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text('Statistics', 
-          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 24)),
+          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -30,7 +31,7 @@ class StatsTab extends StatelessWidget {
           children: [
             _buildStatGrid(totalSeries, totalChapters, readProgressCount, completedCount),
             const SizedBox(height: 24),
-            _buildFavoritesSection(lp),
+            _buildFavoritesSection(context, lp),
           ],
         ),
       ),
@@ -54,22 +55,24 @@ class StatsTab extends StatelessWidget {
     );
   }
 
-  Widget _buildFavoritesSection(LibraryProvider lp) {
-    // For now, just show a placeholder or recently read
+  Widget _buildFavoritesSection(BuildContext context, LibraryProvider lp) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Favorite Series', 
-          style: GoogleFonts.inter(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 18)),
+          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: const Color(0xFF1A1A2E),
+            color: theme.cardColor,
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.05)),
           ),
-          child: const Center(
-            child: Text('Coming Soon: Add to favorites!', style: TextStyle(color: Colors.white30)),
+          child: Center(
+            child: Text('Coming Soon: Add to favorites!', 
+              style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.3))),
           ),
         ),
       ],
@@ -86,21 +89,26 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E),
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: const Color(0xFF6C3CE0), size: 20),
+          Icon(icon, color: theme.primaryColor, size: 20),
           const Spacer(),
-          Text(value, style: GoogleFonts.jetBrainsMono(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-          Text(label, style: const TextStyle(color: Colors.white54, fontSize: 10)),
+          Text(value, style: GoogleFonts.jetBrainsMono(
+            color: theme.colorScheme.onSurface, 
+            fontSize: 24, 
+            fontWeight: FontWeight.bold
+          )),
+          Text(label, style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.54), fontSize: 10)),
         ],
       ),
     );

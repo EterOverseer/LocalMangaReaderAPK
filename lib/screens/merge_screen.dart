@@ -34,10 +34,13 @@ class _MergeScreenState extends State<MergeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F1A),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Merge Manga', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+        title: Text('Merge Manga', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -46,37 +49,38 @@ class _MergeScreenState extends State<MergeScreen> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Card(
-              color: const Color(0xFF1A1A2E),
+              color: theme.cardColor,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Output Filename', style: GoogleFonts.inter(color: Colors.white70, fontSize: 12)),
+                    Text('Output Filename', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.54))),
                     TextField(
                       controller: _nameController,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: const InputDecoration(
+                      style: TextStyle(color: colorScheme.onSurface),
+                      decoration: InputDecoration(
                         hintText: 'Enter name...',
-                        hintStyle: TextStyle(color: Colors.white24),
+                        hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.24)),
                         border: InputBorder.none,
                         suffixText: '.cbz',
-                        suffixStyle: TextStyle(color: Colors.white24),
+                        suffixStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.24)),
                       ),
                     ),
-                    const Divider(color: Colors.white10),
+                    Divider(color: theme.dividerColor.withOpacity(0.05)),
                     Row(
                       children: [
                         const Icon(Icons.delete_sweep_outlined, color: Colors.redAccent, size: 20),
                         const SizedBox(width: 8),
-                        const Expanded(
-                          child: Text('Delete source files after merge', style: TextStyle(color: Colors.white, fontSize: 14)),
+                        Expanded(
+                          child: Text('Delete source files after merge', 
+                            style: TextStyle(color: colorScheme.onSurface, fontSize: 14)),
                         ),
                         Switch(
                           value: _deleteSources,
                           onChanged: (v) => setState(() => _deleteSources = v),
-                          activeColor: const Color(0xFF6C3CE0),
+                          activeColor: theme.primaryColor,
                         ),
                       ],
                     ),
@@ -89,11 +93,13 @@ class _MergeScreenState extends State<MergeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: Row(
               children: [
-                const Icon(Icons.drag_handle_rounded, color: Colors.white24, size: 16),
+                Icon(Icons.drag_handle_rounded, color: colorScheme.onSurface.withOpacity(0.24), size: 16),
                 const SizedBox(width: 8),
-                Text('Drag to reorder', style: GoogleFonts.inter(color: Colors.white24, fontSize: 12)),
+                Text('Drag to reorder', 
+                  style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.24))),
                 const Spacer(),
-                Text('${_chapters.length} items', style: GoogleFonts.inter(color: Colors.white24, fontSize: 12)),
+                Text('${_chapters.length} items', 
+                  style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.24))),
               ],
             ),
           ),
@@ -114,10 +120,12 @@ class _MergeScreenState extends State<MergeScreen> {
                 final manga = _chapters[index];
                 return ListTile(
                   key: ValueKey(manga.path),
-                  leading: const Icon(Icons.menu_book_rounded, color: Color(0xFF6C3CE0)),
-                  title: Text(manga.title, style: const TextStyle(color: Colors.white, fontSize: 14)),
-                  subtitle: Text(manga.chapter ?? 'No Chapter', style: const TextStyle(color: Colors.white38, fontSize: 12)),
-                  trailing: const Icon(Icons.drag_indicator_rounded, color: Colors.white24),
+                  leading: Icon(Icons.menu_book_rounded, color: theme.primaryColor),
+                  title: Text(manga.title, 
+                    style: TextStyle(color: colorScheme.onSurface, fontSize: 14, fontWeight: FontWeight.w500)),
+                  subtitle: Text(manga.chapter ?? 'No Chapter', 
+                    style: TextStyle(color: colorScheme.onSurface.withOpacity(0.38), fontSize: 12)),
+                  trailing: Icon(Icons.drag_indicator_rounded, color: colorScheme.onSurface.withOpacity(0.24)),
                 );
               },
             ),
@@ -134,7 +142,7 @@ class _MergeScreenState extends State<MergeScreen> {
                 });
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6C3CE0),
+                backgroundColor: theme.primaryColor,
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 56),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

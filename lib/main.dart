@@ -36,10 +36,14 @@ void main() async {
   final scannerService = ScannerService(dbHelper, mangaRepo, tagRepo, archiveService, remoteService);
   final backupService = BackupService(dbHelper, mangaRepo, tagRepo, progressRepo);
 
+  // Load Settings before App starts to prevent flicker
+  final settingsProvider = SettingsProvider(dbHelper);
+  await settingsProvider.loadSettings();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => SettingsProvider(dbHelper)),
+        ChangeNotifierProvider.value(value: settingsProvider),
         ChangeNotifierProvider(create: (_) => TagProvider(tagRepo, mangaRepo)),
         Provider.value(value: mergeService),
         ChangeNotifierProvider(
@@ -67,6 +71,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settings = context.watch<SettingsProvider>();
+
     final darkColorScheme = ColorScheme.fromSeed(
       seedColor: const Color(0xFF6C3CE0),
       brightness: Brightness.dark,
@@ -76,17 +82,55 @@ class MyApp extends StatelessWidget {
       secondary: const Color(0xFFBB86FC),
     );
 
+    final lightColorScheme = ColorScheme.fromSeed(
+      seedColor: Colors.blue,
+      brightness: Brightness.light,
+      surface: Colors.white,
+      onSurface: Colors.blue[900]!,
+      primary: Colors.blue,
+      secondary: Colors.blueAccent,
+    );
+
     return MaterialApp(
       title: 'EterOverseer: Manga Reader',
       debugShowCheckedModeBanner: false,
+      themeMode: settings.themeMode,
+      // Light Theme
       theme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.light,
+        colorScheme: lightColorScheme,
+        scaffoldBackgroundColor: Colors.white,
+        textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme).apply(
+          bodyColor: Colors.blue[800],
+          displayColor: Colors.blue[900],
+        ).copyWith(
+          titleLarge: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.blue[900]),
+          titleMedium: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 18, color: Colors.blue[800]),
+        ),
+        cardTheme: CardThemeData(
+          color: Colors.white,
+          elevation: 2,
+          shadowColor: Colors.blue.withOpacity(0.1),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.blue.withOpacity(0.05))),
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: false,
+          iconTheme: const IconThemeData(color: Colors.blue),
+          titleTextStyle: GoogleFonts.inter(color: Colors.blue[900], fontWeight: FontWeight.bold, fontSize: 20),
+        ),
+      ),
+      // Dark Theme
+      darkTheme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
         colorScheme: darkColorScheme,
         scaffoldBackgroundColor: const Color(0xFF0F0F1A),
         textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
-          titleLarge: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 24),
-          titleMedium: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 18),
+          titleLarge: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.white),
+          titleMedium: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 18, color: Colors.white70),
         ),
         cardTheme: CardThemeData(
           color: const Color(0xFF1A1A2E),
@@ -97,6 +141,7 @@ class MyApp extends StatelessWidget {
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: false,
+          iconTheme: IconThemeData(color: Colors.white),
         ),
       ),
       home: const MainScreen(),

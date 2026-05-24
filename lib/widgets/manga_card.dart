@@ -24,16 +24,18 @@ class MangaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Card(
-      color: const Color(0xFF1E1E2E),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: theme.cardTheme.color,
+      shape: theme.cardTheme.shape,
       clipBehavior: Clip.antiAlias,
-      elevation: 4,
+      elevation: theme.cardTheme.elevation,
       child: InkWell(
         onTap: onTap,
         onLongPress: onLongPress,
-        splashColor: const Color(0xFF6C3CE0).withOpacity(0.3),
-        highlightColor: const Color(0xFF6C3CE0).withOpacity(0.1),
+        splashColor: theme.primaryColor.withOpacity(0.3),
+        highlightColor: theme.primaryColor.withOpacity(0.1),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
@@ -48,7 +50,6 @@ class MangaCard extends StatelessWidget {
                     tag: 'cover_${series.firstChapter.path}',
                     child: _ThumbnailWidget(filePath: series.firstChapter.path),
                   ),
-                  // ... (rest of stack remains same)
                   // Gradient overlay at bottom
                   Positioned(
                     bottom: 0,
@@ -62,7 +63,7 @@ class MangaCard extends StatelessWidget {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            Colors.black.withOpacity(0.8),
+                            Colors.black.withOpacity(0.6),
                           ],
                         ),
                       ),
@@ -76,7 +77,7 @@ class MangaCard extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xEE6C3CE0),
+                          color: theme.primaryColor.withOpacity(0.9),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -92,7 +93,7 @@ class MangaCard extends StatelessWidget {
                   // Selection Overlay
                   if (isSelected)
                     Container(
-                      color: const Color(0xFF6C3CE0).withOpacity(0.4),
+                      color: theme.primaryColor.withOpacity(0.4),
                       child: const Center(
                         child: Icon(Icons.check_circle_rounded, color: Colors.white, size: 40),
                       ),
@@ -124,8 +125,12 @@ class MangaCard extends StatelessWidget {
                 series.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
-                  color: Colors.white,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  height: 1.2,
+                ) ?? GoogleFonts.inter(
+                  color: theme.colorScheme.onSurface,
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
                   height: 1.2,
@@ -174,10 +179,11 @@ class _ThumbnailWidgetState extends State<_ThumbnailWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     if (!_loaded) {
       return Shimmer.fromColors(
-        baseColor: const Color(0xFF1E1E2E),
-        highlightColor: const Color(0xFF2A2A3E),
+        baseColor: theme.brightness == Brightness.dark ? const Color(0xFF1E1E2E) : Colors.grey[200]!,
+        highlightColor: theme.brightness == Brightness.dark ? const Color(0xFF2A2A3E) : Colors.grey[100]!,
         child: Container(color: Colors.white),
       );
     }
@@ -210,12 +216,13 @@ class _Placeholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
-      color: const Color(0xFF2A2A3E),
-      child: const Center(
+      color: theme.brightness == Brightness.dark ? const Color(0xFF2A2A3E) : Colors.grey[100],
+      child: Center(
         child: Icon(
           Icons.menu_book_rounded,
-          color: Color(0xFF6C3CE0),
+          color: theme.primaryColor.withOpacity(0.5),
           size: 40,
         ),
       ),

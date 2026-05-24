@@ -9,6 +9,7 @@ class SettingsProvider extends ChangeNotifier {
   bool _rtlMode = false;
   String _readerBg = 'black';
   bool _autoScan = true;
+  ThemeMode _themeMode = ThemeMode.light;
 
   SettingsProvider(this._db);
 
@@ -17,6 +18,7 @@ class SettingsProvider extends ChangeNotifier {
   bool get rtlMode => _rtlMode;
   String get readerBg => _readerBg;
   bool get autoScan => _autoScan;
+  ThemeMode get themeMode => _themeMode;
 
   /// Load settings from database.
   Future<void> loadSettings() async {
@@ -28,6 +30,16 @@ class SettingsProvider extends ChangeNotifier {
     _readerBg = await _db.getConfig('reader_bg') ?? 'black';
     _autoScan = (await _db.getConfig('auto_scan') ?? 'true') == 'true';
 
+    final tm = await _db.getConfig('theme_mode');
+    _themeMode = tm == 'dark' ? ThemeMode.dark : ThemeMode.light;
+
+    notifyListeners();
+  }
+
+  /// Toggle theme mode.
+  Future<void> toggleTheme() async {
+    _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    await _db.setConfig('theme_mode', _themeMode == ThemeMode.dark ? 'dark' : 'light');
     notifyListeners();
   }
 

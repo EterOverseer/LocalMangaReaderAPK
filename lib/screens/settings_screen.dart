@@ -17,23 +17,22 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sp = context.watch<SettingsProvider>();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F1A),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A2E),
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('Settings',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text('Settings'),
       ),
       body: ListView(padding: const EdgeInsets.all(16), children: [
-        _SectionHeader('Source Folders'),
+        const _SectionHeader('Source Folders'),
         _SourceFoldersSection(),
         const SizedBox(height: 24),
-        _SectionHeader('Remote Sources (Beta)'),
+        const _SectionHeader('Remote Sources (Beta)'),
         _RemoteSourcesSection(),
         const SizedBox(height: 24),
-        _SectionHeader('Display'),
+        const _SectionHeader('Display'),
         _SettingTile(
           icon: Icons.grid_view_rounded,
           title: 'Grid Columns',
@@ -43,14 +42,14 @@ class SettingsScreen extends StatelessWidget {
             onPressed: (i) => sp.setGridColumns(i + 2),
             borderRadius: BorderRadius.circular(8),
             selectedColor: Colors.white,
-            fillColor: const Color(0xFF6C3CE0),
-            color: Colors.white54,
+            fillColor: theme.primaryColor,
+            color: colorScheme.onSurface.withOpacity(0.5),
             constraints: const BoxConstraints(minWidth: 44, minHeight: 36),
             children: const [Text(' 2 '), Text(' 3 ')],
           ),
         ),
         const SizedBox(height: 20),
-        _SectionHeader('Reader'),
+        const _SectionHeader('Reader'),
         _SettingTile(
           icon: Icons.auto_stories_rounded,
           title: 'Default Mode',
@@ -65,8 +64,8 @@ class SettingsScreen extends StatelessWidget {
             onPressed: (i) => sp.setDefaultReaderMode(i == 0 ? 'scroll' : 'flip'),
             borderRadius: BorderRadius.circular(8),
             selectedColor: Colors.white,
-            fillColor: const Color(0xFF6C3CE0),
-            color: Colors.white54,
+            fillColor: theme.primaryColor,
+            color: colorScheme.onSurface.withOpacity(0.5),
             constraints: const BoxConstraints(minWidth: 52, minHeight: 36),
             children: const [
               Icon(Icons.swap_vert, size: 18),
@@ -81,7 +80,7 @@ class SettingsScreen extends StatelessWidget {
           trailing: Switch(
               value: sp.rtlMode,
               onChanged: sp.setRtlMode,
-              activeColor: const Color(0xFF6C3CE0)),
+              activeColor: theme.primaryColor),
         ),
         _SettingTile(
           icon: Icons.sync_rounded,
@@ -90,7 +89,7 @@ class SettingsScreen extends StatelessWidget {
           trailing: Switch(
               value: sp.autoScan,
               onChanged: sp.setAutoScan,
-              activeColor: const Color(0xFF6C3CE0)),
+              activeColor: theme.primaryColor),
         ),
         _SettingTile(
           icon: Icons.palette_rounded,
@@ -118,12 +117,12 @@ class SettingsScreen extends StatelessWidget {
           ]),
         ),
         const SizedBox(height: 20),
-        _SectionHeader('Data'),
+        const _SectionHeader('Data'),
         _ActionTile(
           icon: Icons.refresh_rounded,
           title: 'Re-scan Library',
           subtitle: 'Full rescan of all source folders',
-          color: const Color(0xFF6C3CE0),
+          color: theme.primaryColor,
           onTap: () async {
             final lp = context.read<LibraryProvider>();
             final result = await lp.scan();
@@ -131,24 +130,24 @@ class SettingsScreen extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text(
                       'Scan complete: ${result.added} added, ${result.updated} updated, ${result.removed} removed'),
-                  backgroundColor: const Color(0xFF6C3CE0)));
+                  backgroundColor: theme.primaryColor));
             }
           },
         ),
         const SizedBox(height: 20),
-        _SectionHeader('Backup & Migration'),
+        const _SectionHeader('Backup & Migration'),
         _ActionTile(
           icon: Icons.backup_rounded,
           title: 'Create Backup',
           subtitle: 'Save progress and tags to Download folder',
-          color: Colors.tealAccent,
+          color: Colors.teal,
           onTap: () async {
             try {
               final path = await context.read<LibraryProvider>().createBackup();
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text('Backup saved to $path'),
-                    backgroundColor: const Color(0xFF6C3CE0)));
+                    backgroundColor: theme.primaryColor));
               }
             } catch (e) {
               if (context.mounted) {
@@ -163,7 +162,7 @@ class SettingsScreen extends StatelessWidget {
           icon: Icons.restore_rounded,
           title: 'Restore Backup',
           subtitle: 'Load progress and tags from JSON file',
-          color: Colors.lightBlueAccent,
+          color: Colors.blueAccent,
           onTap: () async {
             try {
               final result = await FilePicker.platform
@@ -174,9 +173,9 @@ class SettingsScreen extends StatelessWidget {
 
               if (context.mounted) {
                 await context.read<LibraryProvider>().restoreBackup(path);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text('Backup restored successfully'),
-                    backgroundColor: Color(0xFF6C3CE0)));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: const Text('Backup restored successfully'),
+                    backgroundColor: theme.primaryColor));
               }
             } catch (e) {
               if (context.mounted) {
@@ -188,26 +187,26 @@ class SettingsScreen extends StatelessWidget {
           },
         ),
         const SizedBox(height: 20),
-        _SectionHeader('About'),
+        const _SectionHeader('About'),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-              color: const Color(0xFF1E1E2E),
+              color: theme.cardColor,
               borderRadius: BorderRadius.circular(12)),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Manga Reader',
+            Text('Manga Reader',
                 style: TextStyle(
-                    color: Colors.white,
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                     fontSize: 16)),
             const SizedBox(height: 4),
             Text('Version 1.1.0 (Remote Support)',
                 style: TextStyle(
-                    color: Colors.white.withOpacity(0.4), fontSize: 12)),
+                    color: colorScheme.onSurface.withOpacity(0.4), fontSize: 12)),
             const SizedBox(height: 8),
             Text('Local & Remote manga reader for Android.\nSupports ZIP, CBZ, and PDF files.',
                 style: TextStyle(
-                    color: Colors.white.withOpacity(0.5), fontSize: 13)),
+                    color: colorScheme.onSurface.withOpacity(0.5), fontSize: 13)),
           ]),
         ),
         const SizedBox(height: 40),
@@ -224,8 +223,8 @@ class _SectionHeader extends StatelessWidget {
     return Padding(
         padding: const EdgeInsets.only(bottom: 8),
         child: Text(title,
-            style: const TextStyle(
-                color: Color(0xFF6C3CE0),
+            style: TextStyle(
+                color: Theme.of(context).primaryColor,
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1)));
@@ -244,17 +243,18 @@ class _SettingTile extends StatelessWidget {
       required this.trailing});
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
-          color: const Color(0xFF1E1E2E),
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        leading: Icon(icon, color: Colors.white38, size: 22),
+        leading: Icon(icon, color: theme.colorScheme.onSurface.withOpacity(0.38), size: 22),
         title:
-            Text(title, style: const TextStyle(color: Colors.white, fontSize: 14)),
+            Text(title, style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 14)),
         subtitle: Text(subtitle,
-            style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 11)),
+            style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.3), fontSize: 11)),
         trailing: trailing,
       ),
     );
@@ -275,19 +275,20 @@ class _ActionTile extends StatelessWidget {
       required this.onTap});
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
-          color: const Color(0xFF1E1E2E),
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         onTap: onTap,
         leading: Icon(icon, color: color, size: 22),
         title:
-            Text(title, style: const TextStyle(color: Colors.white, fontSize: 14)),
+            Text(title, style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 14)),
         subtitle: Text(subtitle,
-            style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 11)),
-        trailing: const Icon(Icons.chevron_right, color: Colors.white24),
+            style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.3), fontSize: 11)),
+        trailing: Icon(Icons.chevron_right, color: theme.colorScheme.onSurface.withOpacity(0.24)),
       ),
     );
   }
@@ -305,6 +306,7 @@ class _BgBtn extends StatelessWidget {
       required this.onTap});
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return GestureDetector(
         onTap: onTap,
         child: Container(
@@ -314,7 +316,7 @@ class _BgBtn extends StatelessWidget {
                 color: color,
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                    color: active ? const Color(0xFF6C3CE0) : Colors.white24,
+                    color: active ? theme.primaryColor : theme.colorScheme.onSurface.withOpacity(0.12),
                     width: active ? 2 : 1)),
             child: Center(
                 child: Text(label,
@@ -329,13 +331,14 @@ class _SourceFoldersSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lp = context.watch<LibraryProvider>();
+    final theme = Theme.of(context);
     return FutureBuilder<List<String>>(
       future: lp.getSourceFolders(),
       builder: (ctx, snap) {
         final folders = snap.data ?? [];
         return Container(
           decoration: BoxDecoration(
-              color: const Color(0xFF1E1E2E),
+              color: theme.cardColor,
               borderRadius: BorderRadius.circular(12)),
           child: Column(children: [
             if (folders.isEmpty)
@@ -343,25 +346,25 @@ class _SourceFoldersSection extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   child: Text('No source folders configured',
                       style: TextStyle(
-                          color: Colors.white.withOpacity(0.3), fontSize: 13)))
+                          color: theme.colorScheme.onSurface.withOpacity(0.3), fontSize: 13)))
             else
               ...folders.map((f) => ListTile(
                     dense: true,
                     leading: const Icon(Icons.folder, color: Colors.amber, size: 20),
                     title: Text(f,
-                        style: const TextStyle(color: Colors.white, fontSize: 12)),
+                        style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 12)),
                     trailing: IconButton(
                         icon: const Icon(Icons.remove_circle_outline,
                             color: Colors.redAccent, size: 18),
                         onPressed: () => lp.removeSourceFolder(f)),
                   )),
-            const Divider(color: Color(0xFF2A2A3E), height: 1),
+            Divider(color: theme.dividerColor.withOpacity(0.05), height: 1),
             ListTile(
                 dense: true,
                 leading:
-                    const Icon(Icons.add_rounded, color: Color(0xFF6C3CE0), size: 20),
-                title: const Text('Add folder',
-                    style: TextStyle(color: Color(0xFF6C3CE0), fontSize: 13)),
+                    Icon(Icons.add_rounded, color: theme.primaryColor, size: 20),
+                title: Text('Add folder',
+                    style: TextStyle(color: theme.primaryColor, fontSize: 13)),
                 onTap: () => _addFolder(context)),
           ]),
         );
@@ -370,24 +373,24 @@ class _SourceFoldersSection extends StatelessWidget {
   }
 
   void _addFolder(BuildContext context) {
+    final theme = Theme.of(context);
     final ctrl = TextEditingController(text: '/storage/emulated/0/');
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-              backgroundColor: const Color(0xFF1E1E2E),
+              backgroundColor: theme.cardColor,
               shape:
                   RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: const Text('Add Source', style: TextStyle(color: Colors.white)),
+              title: const Text('Add Source'),
               content: TextField(
                   controller: ctrl,
-                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                       hintText: '/storage/emulated/0/Manga',
-                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+                      hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.3)),
                       filled: true,
-                      fillColor: const Color(0xFF2A2A3E),
+                      fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
                       suffixIcon: IconButton(
-                        icon: const Icon(Icons.folder_open, color: Colors.white70),
+                        icon: Icon(Icons.folder_open, color: theme.colorScheme.onSurface.withOpacity(0.7)),
                         onPressed: () async {
                           String? path = await FilePicker.platform.getDirectoryPath();
                           if (path != null) ctrl.text = path;
@@ -400,7 +403,7 @@ class _SourceFoldersSection extends StatelessWidget {
                 TextButton(
                     onPressed: () => Navigator.pop(ctx),
                     child:
-                        const Text('Cancel', style: TextStyle(color: Colors.white54))),
+                        Text('Cancel', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)))),
                 ElevatedButton(
                     onPressed: () async {
                       final p = ctrl.text.trim();
@@ -410,10 +413,11 @@ class _SourceFoldersSection extends StatelessWidget {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6C3CE0),
+                        backgroundColor: theme.primaryColor,
+                        foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10))),
-                    child: const Text('Add', style: TextStyle(color: Colors.white))),
+                    child: const Text('Add')),
               ],
             ));
   }
@@ -424,16 +428,17 @@ class _RemoteSourcesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final lp = context.watch<LibraryProvider>();
     final sources = lp.remoteSources;
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-          color: const Color(0xFF1E1E2E), borderRadius: BorderRadius.circular(12)),
+          color: theme.cardColor, borderRadius: BorderRadius.circular(12)),
       child: Column(children: [
         if (sources.isEmpty)
           Padding(
               padding: const EdgeInsets.all(16),
               child: Text('No remote sources configured',
                   style: TextStyle(
-                      color: Colors.white.withOpacity(0.3), fontSize: 13)))
+                      color: theme.colorScheme.onSurface.withOpacity(0.3), fontSize: 13)))
         else
           ...sources.map((s) => ListTile(
                 dense: true,
@@ -444,27 +449,28 @@ class _RemoteSourcesSection extends StatelessWidget {
                     color: Colors.lightBlueAccent,
                     size: 20),
                 title: Text(s.name,
-                    style: const TextStyle(color: Colors.white, fontSize: 13)),
+                    style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 13)),
                 subtitle: Text(s.url,
                     style: TextStyle(
-                        color: Colors.white.withOpacity(0.3), fontSize: 10)),
+                        color: theme.colorScheme.onSurface.withOpacity(0.3), fontSize: 10)),
                 trailing: IconButton(
                     icon: const Icon(Icons.remove_circle_outline,
                         color: Colors.redAccent, size: 18),
                     onPressed: () => lp.removeRemoteSource(s.id!)),
               )),
-        const Divider(color: Color(0xFF2A2A3E), height: 1),
+        Divider(color: theme.dividerColor.withOpacity(0.05), height: 1),
         ListTile(
             dense: true,
-            leading: const Icon(Icons.add_rounded, color: Color(0xFF6C3CE0), size: 20),
-            title: const Text('Add Remote Source',
-                style: TextStyle(color: Color(0xFF6C3CE0), fontSize: 13)),
+            leading: Icon(Icons.add_rounded, color: theme.primaryColor, size: 20),
+            title: Text('Add Remote Source',
+                style: TextStyle(color: theme.primaryColor, fontSize: 13)),
             onTap: () => _addRemoteSource(context)),
       ]),
     );
   }
 
   void _addRemoteSource(BuildContext context) {
+    final theme = Theme.of(context);
     final nameCtrl = TextEditingController();
     final urlCtrl = TextEditingController(text: 'http://');
     final userCtrl = TextEditingController();
@@ -476,19 +482,17 @@ class _RemoteSourcesSection extends StatelessWidget {
         context: context,
         builder: (ctx) => StatefulBuilder(
             builder: (ctx, setS) => AlertDialog(
-                  backgroundColor: const Color(0xFF1E1E2E),
+                  backgroundColor: theme.cardColor,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16)),
-                  title: const Text('Add Remote Source',
-                      style: TextStyle(color: Colors.white)),
+                  title: const Text('Add Remote Source'),
                   content: SingleChildScrollView(
                     child: Column(mainAxisSize: MainAxisSize.min, children: [
                       DropdownButton<RemoteSourceType>(
                         value: type,
-                        dropdownColor: const Color(0xFF1A1A2E),
+                        dropdownColor: theme.cardColor,
                         isExpanded: true,
                         underline: const SizedBox(),
-                        style: const TextStyle(color: Colors.white),
                         onChanged: (v) => setS(() {
                           type = v!;
                           if (type == RemoteSourceType.smb && urlCtrl.text.startsWith('http')) {
@@ -503,22 +507,22 @@ class _RemoteSourcesSection extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      _input(nameCtrl, 'Name (e.g. My Nextcloud)'),
+                      _input(context, nameCtrl, 'Name (e.g. My Nextcloud)'),
                       const SizedBox(height: 8),
-                      _input(urlCtrl, type == RemoteSourceType.webdav ? 'URL (http://...)' : 'Host IP'),
+                      _input(context, urlCtrl, type == RemoteSourceType.webdav ? 'URL (http://...)' : 'Host IP'),
                       const SizedBox(height: 8),
-                      _input(userCtrl, 'Username'),
+                      _input(context, userCtrl, 'Username'),
                       const SizedBox(height: 8),
-                      _input(passCtrl, 'Password', obscure: true),
+                      _input(context, passCtrl, 'Password', obscure: true),
                       const SizedBox(height: 8),
-                      _input(pathCtrl, 'Root Path (e.g. /Manga)'),
+                      _input(context, pathCtrl, 'Root Path (e.g. /Manga)'),
                     ]),
                   ),
                   actions: [
                     TextButton(
                         onPressed: () => Navigator.pop(ctx),
-                        child: const Text('Cancel',
-                            style: TextStyle(color: Colors.white54))),
+                        child: Text('Cancel',
+                            style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)))),
                     ElevatedButton(
                         onPressed: () async {
                           if (nameCtrl.text.isEmpty || urlCtrl.text.isEmpty) return;
@@ -534,23 +538,24 @@ class _RemoteSourcesSection extends StatelessWidget {
                           if (ctx.mounted) Navigator.pop(ctx);
                         },
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF6C3CE0)),
-                        child: const Text('Add',
-                            style: TextStyle(color: Colors.white))),
+                            backgroundColor: theme.primaryColor,
+                            foregroundColor: Colors.white),
+                        child: const Text('Add')),
                   ],
                 )));
   }
 
-  Widget _input(TextEditingController ctrl, String hint, {bool obscure = false}) {
+  Widget _input(BuildContext context, TextEditingController ctrl, String hint, {bool obscure = false}) {
+    final theme = Theme.of(context);
     return TextField(
         controller: ctrl,
         obscureText: obscure,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
+        style: const TextStyle(fontSize: 14),
         decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 13),
+            hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.3), fontSize: 13),
             filled: true,
-            fillColor: const Color(0xFF2A2A3E),
+            fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
             isDense: true,
             border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)));

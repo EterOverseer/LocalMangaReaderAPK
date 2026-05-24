@@ -59,15 +59,15 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final sp = context.watch<SettingsProvider>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F1A),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: RefreshIndicator(
         onRefresh: () => lp.scan(),
-        color: const Color(0xFF6C3CE0),
+        color: Theme.of(context).primaryColor,
         displacement: 100,
         child: CustomScrollView(
           controller: _scrollController,
           slivers: [
-            _buildSliverAppBar(lp, tp),
+            _buildSliverAppBar(lp, tp, sp),
             
             if (lp.scanState == ScanState.scanning)
               SliverToBoxAdapter(child: _scanIndicator(lp)),
@@ -99,11 +99,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
         duration: const Duration(milliseconds: 200),
         child: FloatingActionButton(
           onPressed: () => lp.toggleSelectMode(),
-          backgroundColor: lp.isSelectMode ? Colors.redAccent : const Color(0xFF6C3CE0),
+          backgroundColor: lp.isSelectMode ? Colors.redAccent : Theme.of(context).primaryColor,
           child: Icon(lp.isSelectMode ? Icons.close_rounded : Icons.checklist_rounded, color: Colors.white),
         ),
       ),
-      // Progress overlay for batch operations
       extendBodyBehindAppBar: true,
       bottomSheet: lp.isProcessing ? _buildProgressBottomSheet(lp) : null,
     );
@@ -113,7 +112,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     return OpenContainer(
       closedElevation: 0,
       closedColor: Colors.transparent,
-      openColor: const Color(0xFF0F0F1A),
+      openColor: Theme.of(context).scaffoldBackgroundColor,
       transitionDuration: const Duration(milliseconds: 500),
       openBuilder: (context, _) => series.isStandalone 
           ? ReaderScreen(key: UniqueKey(), playlist: series.chapters, initialIndex: 0)
@@ -144,12 +143,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
-  Widget _buildSliverAppBar(LibraryProvider lp, TagProvider tp) {
+  Widget _buildSliverAppBar(LibraryProvider lp, TagProvider tp, SettingsProvider sp) {
     return SliverAppBar(
       expandedHeight: 130,
       floating: true,
       pinned: true,
-      backgroundColor: const Color(0xFF0F0F1A).withOpacity(0.9),
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor?.withOpacity(0.9) ?? Theme.of(context).scaffoldBackgroundColor.withOpacity(0.9),
       elevation: 0,
       title: lp.isSelectMode ? _selectionTitle(lp) : _appTitle(lp),
       flexibleSpace: FlexibleSpaceBar(
@@ -163,14 +162,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
           ],
         ),
       ),
-      actions: lp.isSelectMode ? _selectionActions(lp, tp) : _defaultActions(lp, tp),
+      actions: lp.isSelectMode ? _selectionActions(lp, tp) : _defaultActions(lp, tp, sp),
     );
   }
 
   Widget _appTitle(LibraryProvider lp) {
     return PopupMenuButton<int>(
       offset: const Offset(0, 40),
-      color: const Color(0xFF1E1E2E),
+      color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       onSelected: (idx) => lp.setActiveSource(idx),
       itemBuilder: (ctx) {
@@ -178,7 +177,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           PopupMenuItem(
             value: -1,
             child: Row(children: [
-              Icon(Icons.library_books_rounded, color: lp.activeSourceIndex == -1 ? const Color(0xFF6C3CE0) : Colors.white54, size: 20),
+              Icon(Icons.library_books_rounded, color: lp.activeSourceIndex == -1 ? Theme.of(context).primaryColor : Colors.grey, size: 20),
               const SizedBox(width: 10),
               const Text('All Sources'),
             ]),
@@ -194,19 +193,19 @@ class _LibraryScreenState extends State<LibraryScreen> {
         return items;
       },
       child: Row(mainAxisSize: MainAxisSize.min, children: [
-        const Icon(Icons.menu_book_rounded, color: Color(0xFF6C3CE0), size: 28),
-        const SizedBox(width: 10),
+        // App Logo
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.asset('assets/logo_mangaReader.jpg', width: 32, height: 32, fit: BoxFit.cover),
+        ),
+        const SizedBox(width: 12),
         Flexible(
           child: Text(
             lp.activeSourceIndex == -1 ? 'Local Library' : p.basename(lp.sourceFolders[lp.activeSourceIndex]),
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
+            style: Theme.of(context).appBarTheme.titleTextStyle,
             overflow: TextOverflow.ellipsis),
         ),
-        const Icon(Icons.arrow_drop_down, color: Colors.white54),
+        Icon(Icons.arrow_drop_down, color: Theme.of(context).appBarTheme.iconTheme?.color?.withOpacity(0.5)),
       ]),
     );
   }
@@ -215,10 +214,15 @@ class _LibraryScreenState extends State<LibraryScreen> {
     return Text('${lp.selectedSeries.length} Selected', style: GoogleFonts.inter(fontWeight: FontWeight.bold));
   }
 
-  List<Widget> _defaultActions(LibraryProvider lp, TagProvider tp) {
+  List<Widget> _defaultActions(LibraryProvider lp, TagProvider tp, SettingsProvider sp) {
     return [
+      // Theme Toggle Button
       IconButton(
-        icon: Icon(_showSearch ? Icons.close : Icons.search, color: Colors.white70),
+        icon: Icon(sp.themeMode == ThemeMode.light ? Icons.dark_mode_outlined : Icons.light_mode_outlined),
+        onPressed: () => sp.toggleTheme(),
+      ),
+      IconButton(
+        icon: Icon(_showSearch ? Icons.close : Icons.search),
         onPressed: () {
           setState(() {
             _showSearch = !_showSearch;
@@ -230,8 +234,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
         },
       ),
       PopupMenuButton<SortMode>(
-        icon: const Icon(Icons.sort_rounded, color: Colors.white70),
-        color: const Color(0xFF2A2A3E),
+        icon: const Icon(Icons.sort_rounded),
+        color: Theme.of(context).cardColor,
         onSelected: lp.setSortMode,
         itemBuilder: (_) => [
           _sortItem(SortMode.title, 'Title', Icons.sort_by_alpha, lp.sortMode),
@@ -250,45 +254,23 @@ class _LibraryScreenState extends State<LibraryScreen> {
         onPressed: () => _handleMerge(lp),
       ),
       IconButton(
-        icon: const Icon(Icons.label_outline_rounded),
+        icon: const Icon(Icons.label_outline_rounded, color: Colors.white),
         onPressed: () => _showBatchTagAction(lp, tp, true),
       ),
       IconButton(
-        icon: const Icon(Icons.label_off_rounded),
+        icon: const Icon(Icons.label_off_rounded, color: Colors.white),
         onPressed: () => _showBatchTagAction(lp, tp, false),
       ),
     ];
   }
 
-  Future<void> _handleMerge(LibraryProvider lp) async {
-    if (lp.selectedSeries.isEmpty) return;
-
-    final List<MangaFile> allChapters = [];
-    for (final series in lp.selectedSeries) {
-      allChapters.addAll(series.chapters);
-    }
-
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => MergeScreen(initialChapters: allChapters)),
-    );
-
-    if (result != null && result is Map) {
-      final chapters = result['chapters'] as List<MangaFile>;
-      final name = result['name'] as String;
-      final delete = result['delete'] as bool;
-      
-      lp.mergeSelected(chapters, name, delete);
-    }
-  }
-
   PopupMenuItem<SortMode> _sortItem(SortMode m, String l, IconData ic, SortMode cur) {
     final on = m == cur;
     return PopupMenuItem(value: m, child: Row(children: [
-      Icon(ic, color: on ? const Color(0xFF6C3CE0) : Colors.white54, size: 18),
+      Icon(ic, color: on ? Theme.of(context).primaryColor : Colors.grey, size: 18),
       const SizedBox(width: 8),
       Text(l, style: TextStyle(
-        color: on ? const Color(0xFF6C3CE0) : Colors.white,
+        color: on ? Theme.of(context).primaryColor : null,
         fontWeight: on ? FontWeight.bold : FontWeight.normal)),
     ]));
   }
@@ -297,17 +279,17 @@ class _LibraryScreenState extends State<LibraryScreen> {
     return Container(
       height: 40,
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: TextField(
         controller: _searchController,
         autofocus: true,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
+        style: const TextStyle(fontSize: 14),
         decoration: InputDecoration(
           hintText: 'Search manga...',
-          hintStyle: const TextStyle(color: Colors.white24, fontSize: 14),
-          prefixIcon: const Icon(Icons.search, color: Color(0xFF6C3CE0), size: 18),
+          hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+          prefixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor, size: 18),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 10),
         ),
@@ -338,9 +320,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF6C3CE0) : const Color(0xFF1A1A2E),
+          color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isSelected ? Colors.transparent : Colors.white.withOpacity(0.05)),
+          border: Border.all(color: isSelected ? Colors.transparent : Colors.grey.withOpacity(0.2)),
         ),
         child: Row(
           children: [
@@ -351,7 +333,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : Colors.white70,
+                color: isSelected ? Colors.white : null,
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
@@ -367,21 +349,21 @@ class _LibraryScreenState extends State<LibraryScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              const SizedBox(
+              SizedBox(
                 width: 12, height: 12,
-                child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Color(0xFF6C3CE0))),
+                child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Theme.of(context).primaryColor)),
               ),
               const SizedBox(width: 12),
-              Text('Scanning...', style: GoogleFonts.inter(fontSize: 12, color: Colors.white70)),
+              Text('Scanning...', style: GoogleFonts.inter(fontSize: 12)),
               const Spacer(),
-              Text('${p.scanProgress}/${p.scanTotal}', style: GoogleFonts.jetBrainsMono(fontSize: 10, color: const Color(0xFF6C3CE0))),
+              Text('${p.scanProgress}/${p.scanTotal}', style: GoogleFonts.jetBrainsMono(fontSize: 10, color: Theme.of(context).primaryColor)),
             ],
           ),
           const SizedBox(height: 8),
@@ -390,8 +372,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
             child: LinearProgressIndicator(
               value: p.scanTotal > 0 ? p.scanProgress / p.scanTotal : 0,
               minHeight: 2,
-              backgroundColor: Colors.white.withOpacity(0.05),
-              valueColor: const AlwaysStoppedAnimation(Color(0xFF6C3CE0)),
+              backgroundColor: Colors.grey.withOpacity(0.1),
+              valueColor: AlwaysStoppedAnimation(Theme.of(context).primaryColor),
             ),
           ),
         ],
@@ -401,10 +383,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   Widget _emptyState(LibraryProvider p) {
     return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-      Icon(Icons.auto_stories_outlined, size: 64, color: Colors.white.withOpacity(0.1)),
+      Icon(Icons.auto_stories_outlined, size: 64, color: Colors.grey.withOpacity(0.3)),
       const SizedBox(height: 16),
       Text(p.filterTags.isNotEmpty || p.searchQuery.isNotEmpty ? 'No matches found' : 'Your library is empty', 
-        style: GoogleFonts.inter(color: Colors.white38, fontSize: 16)),
+        style: GoogleFonts.inter(color: Colors.grey, fontSize: 16)),
       const SizedBox(height: 24),
       if (p.filterTags.isNotEmpty || p.searchQuery.isNotEmpty)
         TextButton(onPressed: p.clearFilters, child: const Text('Clear Filters'))
@@ -412,10 +394,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
         ElevatedButton(
           onPressed: _showAddSourceDialog,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF6C3CE0),
+            backgroundColor: Theme.of(context).primaryColor,
+            foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-          child: const Text('Add Source', style: TextStyle(color: Colors.white)),
+          child: const Text('Add Source'),
         ),
     ]));
   }
@@ -423,15 +406,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
   void _showAddSourceDialog() {
     final ctrl = TextEditingController();
     showDialog(context: context, builder: (ctx) => AlertDialog(
-      backgroundColor: const Color(0xFF1E1E2E),
+      backgroundColor: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: const Text('Add Source', style: TextStyle(color: Colors.white)),
+      title: const Text('Add Source'),
       content: TextField(
         controller: ctrl,
-        style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           hintText: 'Folder path',
-          filled: true, fillColor: const Color(0xFF2A2A3E),
+          filled: true, fillColor: Colors.grey.withOpacity(0.05),
           suffixIcon: IconButton(
             icon: const Icon(Icons.folder_open),
             onPressed: () async {
@@ -460,7 +442,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   Widget _buildProgressBottomSheet(LibraryProvider lp) {
     return Container(
-      color: const Color(0xFF1A1A2E),
+      color: Theme.of(context).cardColor,
       padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -469,7 +451,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             children: [
               const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
               const SizedBox(width: 16),
-              Expanded(child: Text(lp.processMessage, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+              Expanded(child: Text(lp.processMessage, style: const TextStyle(fontWeight: FontWeight.bold))),
             ],
           ),
           const SizedBox(height: 16),
@@ -479,10 +461,32 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
+  Future<void> _handleMerge(LibraryProvider lp) async {
+    if (lp.selectedSeries.isEmpty) return;
+
+    final List<MangaFile> allChapters = [];
+    for (final series in lp.selectedSeries) {
+      allChapters.addAll(series.chapters);
+    }
+
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => MergeScreen(initialChapters: allChapters)),
+    );
+
+    if (result != null && result is Map) {
+      final chapters = result['chapters'] as List<MangaFile>;
+      final name = result['name'] as String;
+      final delete = result['delete'] as bool;
+      
+      lp.mergeSelected(chapters, name, delete);
+    }
+  }
+
   void _showBatchTagAction(LibraryProvider lp, TagProvider tp, bool isAdd) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF151525),
+      backgroundColor: Theme.of(context).cardColor,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => StatefulBuilder(builder: (ctx, setS) {
         String query = '';
@@ -493,11 +497,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(isAdd ? 'Add Tag' : 'Remove Tag', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+              Text(isAdd ? 'Add Tag' : 'Remove Tag', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
               TextField(
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(hintText: 'Search tags...', hintStyle: TextStyle(color: Colors.white24)),
+                decoration: const InputDecoration(hintText: 'Search tags...'),
                 onChanged: (v) => setS(() => query = v),
               ),
               const SizedBox(height: 12),
@@ -506,7 +509,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 child: ListView.builder(
                   itemCount: filtered.length,
                   itemBuilder: (ctx, i) => ListTile(
-                    title: Text(filtered[i], style: const TextStyle(color: Colors.white70)),
+                    title: Text(filtered[i]),
                     onTap: () {
                       Navigator.pop(context);
                       isAdd ? lp.addTagsToSelected(filtered[i]) : lp.removeTagsFromSelected(filtered[i]);

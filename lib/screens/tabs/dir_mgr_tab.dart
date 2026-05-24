@@ -12,21 +12,22 @@ class DirMgrTab extends StatelessWidget {
     final lp = context.watch<LibraryProvider>();
     final sources = lp.sourceFolders;
     final remoteSources = lp.remoteSources;
+    final theme = Theme.of(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text('Source Manager', 
-          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 24)),
+          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add_location_alt_rounded, color: Color(0xFF6C3CE0)),
+            icon: Icon(Icons.add_location_alt_rounded, color: theme.primaryColor),
             onPressed: () => _addLocalSource(context, lp),
           ),
           IconButton(
-            icon: const Icon(Icons.cloud_circle_rounded, color: Color(0xFF6C3CE0)),
+            icon: Icon(Icons.cloud_circle_rounded, color: theme.primaryColor),
             onPressed: () => _addRemoteSource(context, lp),
           ),
         ],
@@ -34,14 +35,14 @@ class DirMgrTab extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _sectionHeader('Local Sources'),
+          _sectionHeader(context, 'Local Sources'),
           ...sources.map((s) => _SourceCard(
             name: s,
             isRemote: false,
             onDelete: () => lp.removeSourceFolder(s),
           )),
           const SizedBox(height: 24),
-          _sectionHeader('Remote Sources'),
+          _sectionHeader(context, 'Remote Sources'),
           ...remoteSources.map((s) => _SourceCard(
             name: s.name,
             isRemote: true,
@@ -53,11 +54,16 @@ class DirMgrTab extends StatelessWidget {
     );
   }
 
-  Widget _sectionHeader(String title) {
+  Widget _sectionHeader(BuildContext context, String title) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0, left: 4),
       child: Text(title, 
-        style: GoogleFonts.inter(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 14)),
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.onSurface.withOpacity(0.7),
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        )),
     );
   }
 
@@ -85,19 +91,20 @@ class _SourceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E),
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.05)),
       ),
       child: Row(
         children: [
           Icon(
             isRemote ? Icons.cloud_queue_rounded : Icons.folder_open_rounded,
-            color: const Color(0xFF6C3CE0),
+            color: theme.primaryColor,
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -107,10 +114,10 @@ class _SourceCard extends StatelessWidget {
                 Text(name, 
                   maxLines: 1, 
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600)),
+                  style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
                 if (isRemote)
                   Text(source?.url ?? '', 
-                    style: const TextStyle(color: Colors.white38, fontSize: 10)),
+                    style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.38), fontSize: 10)),
               ],
             ),
           ),
@@ -139,10 +146,11 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(right: 4),
       child: IconButton(
-        icon: Icon(icon, color: Colors.white70, size: 20),
+        icon: Icon(icon, color: theme.colorScheme.onSurface.withOpacity(0.7), size: 20),
         tooltip: tooltip,
         onPressed: onTap,
         padding: EdgeInsets.zero,

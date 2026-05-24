@@ -53,15 +53,18 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F1A),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: IndexedStack(
         index: _selectedIndex,
         children: _tabs,
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A2E),
+          color: theme.cardColor,
           boxShadow: [
             BoxShadow(
               blurRadius: 20,
@@ -73,15 +76,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
             child: GNav(
-              rippleColor: Colors.grey[300]!,
-              hoverColor: Colors.grey[100]!,
+              rippleColor: colorScheme.onSurface.withOpacity(0.1),
+              hoverColor: colorScheme.onSurface.withOpacity(0.05),
               gap: 8,
-              activeColor: const Color(0xFF6C3CE0),
+              activeColor: theme.primaryColor,
               iconSize: 24,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               duration: const Duration(milliseconds: 400),
-              tabBackgroundColor: const Color(0xFF6C3CE0).withOpacity(0.1),
-              color: Colors.white54,
+              tabBackgroundColor: theme.primaryColor.withOpacity(0.1),
+              color: colorScheme.onSurface.withOpacity(0.54),
               tabs: const [
                 GButton(icon: Icons.settings_outlined, text: 'Settings'),
                 GButton(icon: Icons.label_outline_rounded, text: 'Tags'),

@@ -15,22 +15,25 @@ class SeriesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final tp = context.watch<TagProvider>();
     final lp = context.watch<LibraryProvider>();
     final chapters = List<MangaFile>.from(series.chapters)
       ..sort((a, b) => (a.chapter ?? '').compareTo(b.chapter ?? ''));
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F1A),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(slivers: [
         SliverAppBar(
           expandedHeight: 280,
           pinned: true,
-          backgroundColor: const Color(0xFF1A1A2E),
-          iconTheme: const IconThemeData(color: Colors.white),
+          backgroundColor: theme.appBarTheme.backgroundColor ?? theme.cardColor,
+          iconTheme: theme.appBarTheme.iconTheme,
           flexibleSpace: FlexibleSpaceBar(
             title: Text(series.title,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+              style: theme.appBarTheme.titleTextStyle?.copyWith(fontSize: 16) ?? 
+                    TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 16)),
             background: Stack(fit: StackFit.expand, children: [
               Hero(
                 tag: 'cover_${series.firstChapter.path}',
@@ -38,7 +41,7 @@ class SeriesScreen extends StatelessWidget {
               ),
               Container(decoration: BoxDecoration(gradient: LinearGradient(
                 begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                colors: [Colors.transparent, const Color(0xFF0F0F1A).withOpacity(0.9)]))),
+                colors: [Colors.transparent, theme.scaffoldBackgroundColor.withOpacity(0.9)]))),
             ]),
           ),
         ),
@@ -50,8 +53,8 @@ class SeriesScreen extends StatelessWidget {
                 tagName: n, tagData: tp.getTagByName(n), fontSize: 11)).toList()),
             const SizedBox(height: 12),
             Text('${chapters.length} chapter${chapters.length > 1 ? 's' : ''}',
-              style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13)),
-            const Divider(color: Color(0xFF2A2A3E), height: 24),
+              style: TextStyle(color: colorScheme.onSurface.withOpacity(0.5), fontSize: 13)),
+            Divider(color: colorScheme.onSurface.withOpacity(0.1), height: 24),
           ]),
         )),
         SliverList(delegate: SliverChildBuilderDelegate((ctx, i) {
@@ -92,12 +95,12 @@ class _CoverImageState extends State<_CoverImage> {
   Widget build(BuildContext context) {
     if (_path != null && File(_path!).existsSync()) {
       return Image.file(File(_path!), fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _ph());
+        errorBuilder: (_, __, ___) => _ph(context));
     }
-    return _ph();
+    return _ph(context);
   }
-  Widget _ph() => Container(color: const Color(0xFF2A2A3E),
-    child: const Center(child: Icon(Icons.menu_book_rounded, color: Color(0xFF6C3CE0), size: 64)));
+  Widget _ph(BuildContext context) => Container(color: Theme.of(context).cardColor,
+    child: Center(child: Icon(Icons.menu_book_rounded, color: Theme.of(context).primaryColor.withOpacity(0.5), size: 64)));
 }
 
 class _ChapterTile extends StatelessWidget {
@@ -109,31 +112,34 @@ class _ChapterTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return ListTile(
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: Container(
         width: 36, height: 36,
         decoration: BoxDecoration(
-          color: isRead ? const Color(0xFF6C3CE0).withOpacity(0.2) : const Color(0xFF2A2A3E),
+          color: isRead ? theme.primaryColor.withOpacity(0.2) : theme.cardColor,
           borderRadius: BorderRadius.circular(8)),
         child: Icon(
           isRead ? Icons.check_rounded : Icons.book_rounded,
-          color: isRead ? const Color(0xFF6C3CE0) : Colors.white38, size: 18),
+          color: isRead ? theme.primaryColor : colorScheme.onSurface.withOpacity(0.3), size: 18),
       ),
       title: Text(manga.chapter ?? manga.title,
-        style: TextStyle(color: isRead ? Colors.white54 : Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+        style: TextStyle(color: isRead ? colorScheme.onSurface.withOpacity(0.5) : colorScheme.onSurface, fontSize: 14, fontWeight: FontWeight.w500)),
       subtitle: progress != null
         ? Text('Page ${progress!.page + 1} / ${progress!.totalPages}',
-            style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 11))
+            style: TextStyle(color: colorScheme.onSurface.withOpacity(0.3), fontSize: 11))
         : null,
       trailing: progress != null
         ? SizedBox(width: 32, height: 32,
             child: CircularProgressIndicator(
               value: progress!.progressPercent, strokeWidth: 2.5,
-              backgroundColor: const Color(0xFF2A2A3E),
-              valueColor: const AlwaysStoppedAnimation(Color(0xFF6C3CE0))))
-        : const Icon(Icons.chevron_right, color: Colors.white24),
+              backgroundColor: theme.cardColor,
+              valueColor: AlwaysStoppedAnimation(theme.primaryColor)))
+        : Icon(Icons.chevron_right, color: colorScheme.onSurface.withOpacity(0.2)),
     );
   }
 }
